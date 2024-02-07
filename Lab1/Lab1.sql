@@ -88,5 +88,11 @@ BEGIN
     v_total_reward := (1 + p_annual_bonus_percentage / 100) * 12 * p_monthly_salary;
 
     RETURN v_total_reward;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Обработка любых других исключений
+        -- Получить сообщение об ошибке и вывести его
+        RAISE_APPLICATION_ERROR(-20003, 'An error occurred: ' || SQLERRM);
 END;
 /
