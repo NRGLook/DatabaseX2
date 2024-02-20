@@ -157,4 +157,3 @@ EXCEPTION
 END Count_Annual_Reward;
 
 SELECT Count_Annual_Reward('abcd', 10) FROM dual;
-
