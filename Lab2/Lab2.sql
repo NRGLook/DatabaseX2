@@ -139,7 +139,7 @@ END LOOP;
 
 DELETE FROM students_log WHERE DATE_OF_ACTION >= cur_date;
 END;
-/
+
 
 CREATE OR REPLACE TRIGGER trigger_group_c_val_students_update
     AFTER UPDATE ON students
@@ -170,3 +170,38 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('Error in trigger_group_c_val_students_delete: ' || SQLERRM);
 END;
 /
+
+DELETE FROM students;
+DELETE FROM groups;
+DELETE FROM students_log;
+COMMIT;
+
+INSERT INTO groups (id, name, c_val) VALUES (1, '153501', 0);
+INSERT INTO groups (id, name, c_val) VALUES (2, '153502', 0);
+INSERT INTO groups (id, name, c_val) VALUES (3, '153503', 0);
+INSERT INTO groups (id, name, c_val) VALUES (4, '153504', 0);
+COMMIT;
+
+INSERT INTO students (id, name, group_id) VALUES (1, 'Ilya', 4);
+INSERT INTO students (id, name, group_id) VALUES (2, 'Pavel', 1);
+INSERT INTO students (id, name, group_id) VALUES (3, 'Dasha', 2);
+INSERT INTO students (id, name, group_id) VALUES (4, 'Eugene', 3);
+INSERT INTO students (id, name, group_id) VALUES (5, 'Kolya', 4);
+COMMIT;
+
+SELECT * FROM students;
+SELECT * FROM groups;
+SELECT * FROM students_log;
+
+CALL restore_students_info_by_date(TO_TIMESTAMP('2024-02-09 20:00:00', '2024-02-21 15:11:00'));
+
+INSERT INTO groups VALUES (5, '153505', 0);
+
+DELETE FROM groups WHERE id = 2;
+
+DELETE FROM students WHERE name LIKE '%PP%';
+
+INSERT INTO groups VALUES (8, '153502', 0);
+INSERT INTO groups VALUES (9, '153502', 0);
+
+INSERT INTO students (id, name, group_id) VALUES (6, 'PAUL', 1);
