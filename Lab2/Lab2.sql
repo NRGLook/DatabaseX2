@@ -141,6 +141,7 @@ DELETE FROM students_log WHERE DATE_OF_ACTION >= cur_date;
 END;
 
 
+
 CREATE OR REPLACE TRIGGER trigger_group_c_val_students_update
     AFTER UPDATE ON students
                      FOR EACH ROW
@@ -193,7 +194,8 @@ SELECT * FROM students;
 SELECT * FROM groups;
 SELECT * FROM students_log;
 
-CALL restore_students_info_by_date(TO_TIMESTAMP('2024-02-09 20:00:00', '2024-02-21 15:11:00'));
+CALL restore_students_info_by_date(TO_TIMESTAMP('2024-02-09 20:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+COMMIT;
 
 INSERT INTO groups VALUES (5, '153505', 0);
 
