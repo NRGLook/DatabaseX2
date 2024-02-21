@@ -19,7 +19,7 @@ END;
 TRUNCATE TABLE MYTABLE;
 
 --                                                   Task 3 - Function CheckNumbers
-CREATE FUNCTION CheckNumbers RETURN VARCHAR2 IS
+CREATE OR REPLACE FUNCTION CheckNumbers RETURN VARCHAR2 IS
     count_odd NUMBER; --nechet
     count_even NUMBER; --chet
     text_str VARCHAR2(10);
@@ -67,7 +67,7 @@ EXCEPTION
 
 END;
 
-SELECT Insert_Generation(10001) FROM DUAL;
+SELECT Insert_Generation(121) FROM DUAL;
 
 --                                                         Task 5 - MyProcedures
 CREATE OR REPLACE PROCEDURE Insert_Record(
@@ -76,12 +76,17 @@ CREATE OR REPLACE PROCEDURE Insert_Record(
     v_id NUMBER;
 BEGIN
     IF p_val IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20001, 'VAL can not be NULL');
+        RAISE_APPLICATION_ERROR(-20001, 'VAL cannot be NULL');
     END IF;
 
-    INSERT INTO mytable (val) VALUES (p_val)
-    RETURNING id INTO v_id;
-
+    BEGIN
+        SELECT id INTO v_id FROM MYTABLE WHERE val = p_val;
+        RAISE_APPLICATION_ERROR(-20002, 'Record with the same VAL already exists');
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            NULL;
+    END;
+    INSERT INTO MYTABLE (val) VALUES (p_val) RETURNING id INTO v_id;
     COMMIT;
 END Insert_Record;
 
@@ -89,48 +94,57 @@ CREATE OR REPLACE PROCEDURE Update_Record(
     p_id NUMBER,
     p_val NUMBER
 ) AS
+    v_count NUMBER;
 BEGIN
-    IF p_id IS NULL OR p_val IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20001, 'ID and VAL can not be NULL');
+    SELECT COUNT(*) INTO v_count FROM MYTABLE WHERE id = p_id;
+
+    IF v_count = 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Data with this ID cannot be found');
     END IF;
 
-    IF NOT EXISTS(SELECT 1 FROM mytable WHERE id = p_id) THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Data with this ID can not be found');
-    END IF;
-
-    UPDATE mytable SET val = p_val WHERE id = p_id;
+    UPDATE MYTABLE SET val = p_val WHERE id = p_id;
 
     COMMIT;
 END Update_Record;
 
+
 CREATE OR REPLACE PROCEDURE Delete_Record(
     p_id NUMBER
 ) AS
+    v_count NUMBER;
 BEGIN
     IF p_id IS NULL THEN
         RAISE_APPLICATION_ERROR(-20001, 'ID can not be NULL');
     END IF;
 
-    IF NOT EXISTS(SELECT 1 FROM mytable WHERE id = p_id) THEN
+    SELECT COUNT(*) INTO v_count FROM MYTABLE WHERE id = p_id;
+
+    IF v_count = 0 THEN
         RAISE_APPLICATION_ERROR(-20002, 'Data with this ID not found');
     END IF;
 
-    DELETE FROM mytable WHERE id = p_id;
+    DELETE FROM MYTABLE WHERE id = p_id;
 
     COMMIT;
 END Delete_Record;
 
 
 BEGIN
-    Insert_Record(123);
+    Insert_Record(999999);
 END;
 
-BEGIN
-    update_record(1, 123);
-END;
+-- SELECT * FROM MYTABLE WHERE val=999999
+--
+-- SELECT * FROM ALL_OBJECTS WHERE OBJECT_NAME = 'UPDxATE_RECORD';
 
 BEGIN
-    delete_record(1);
+    Update_Record(1751, 123456);
+END;
+
+-- SELECT * FROM MYTABLE WHERE val=123456
+
+BEGIN
+    Delete_Record(1751);
 END;
 
 --                                                  Task 6 - Function for avg_salary
